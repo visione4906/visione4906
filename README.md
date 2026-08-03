@@ -13,7 +13,7 @@ message it the way a customer would, and read what comes back. Nothing is script
 
 ### What is here
 
-- **[A live service that answers for small businesses](#a-live-service-that-answers-for-small-businesses).** Running unattended on nine scheduled jobs, with one paying client.
+- **[A live service that answers for small businesses](#a-live-service-that-answers-for-small-businesses).** Running unattended on nine scheduled jobs, with users.
 - **[claimcheck](#claimcheck).** Verifies a document against the code it describes, and fails the build when it lies.
 - **[Testing the failures that stay quiet](#testing-the-failures-that-stay-quiet).** How the service above avoids breaking without anyone noticing.
 - **[A video pipeline, and the fork that proved it](#a-video-pipeline-and-the-fork-that-proved-it).** Script to upload, on a schedule.
@@ -44,7 +44,7 @@ Consent lives in the code rather than in a policy document. The suppression gate
 closed, so a contact who has opted out cannot be messaged even when something upstream
 is broken. That property is what would survive a regulated review.
 
-It is built multi-tenant and currently carries one paying client. It sits on a
+It is built multi-tenant and has users. It sits on a
 free-tier ARM box behind a Cloudflare tunnel, and the health check answered in 0.16
 seconds on 2 August 2026. Nine scheduled jobs keep it running without supervision:
 reply triage six times a day, bounce handling, deliverability reporting, nurture
