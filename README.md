@@ -1,7 +1,7 @@
 # Sal Oladapo
 
-I build LLM systems that run in production, and I keep a person at the one gate where
-a mistake would be public.
+I build LLM systems that run in production, and I keep a person in the loop at the one
+point where a mistake would be public.
 
 Python, FastAPI, Anthropic Claude, TypeScript, Next.js, SQLite, Oracle Cloud ARM,
 Cloudflare. Based in the UK.
@@ -13,7 +13,7 @@ message it the way a customer would, and read what comes back. Nothing is script
 
 ### What is here
 
-- **[A live service that answers for small businesses](#a-live-service-that-answers-for-small-businesses).** Running unattended on nine scheduled jobs, with users.
+- **[A live service that answers for small businesses](#a-live-service-that-answers-for-small-businesses).** Running unattended on scheduled jobs, with users.
 - **[claimcheck](#claimcheck).** Verifies a document against the code it describes, and fails the build when it lies.
 - **[Testing the failures that stay quiet](#testing-the-failures-that-stay-quiet).** How the service above avoids breaking without anyone noticing.
 - **[A video pipeline, and the fork that proved it](#a-video-pipeline-and-the-fork-that-proved-it).** Script to upload, on a schedule.
@@ -28,28 +28,26 @@ runs the business.
 
 A service business that misses an enquiry usually loses it. The customer books
 whoever answers first, and out of hours that is nobody. This answers straight away,
-in the business's own voice, and carries the conversation through to a booking and a
-payment.
+in the business's own voice, and carries the conversation to the point of a booking.
 
 It runs on FastAPI and Anthropic Claude. A single prompt builder serves every customer
 from their own configuration, switching between a concierge path and a booking path.
-Behind that sit twenty-four service modules and a provider layer, so a vendor can be
+Behind that sit twenty-three service modules and a provider layer, so a vendor can be
 replaced without rewriting the app: Stripe for payments, with an end-to-end smoke test
 and a refund tester; Resend and Twilio for email and SMS, including missed-call
 recovery; rolling and static calendar slots; Instagram OAuth, sending and inbound
 webhooks; and the account layer, covering authenticated dashboards, onboarding, rate
 limiting and suppression.
 
-Consent lives in the code rather than in a policy document. The suppression gate fails
-closed, so a contact who has opted out cannot be messaged even when something upstream
-is broken. That property is what would survive a regulated review.
+Consent lives in the code rather than in a policy document. Every outbound message has
+to pass a suppression gate, and a genuine human reply puts that person on a persistent
+list that every later send checks.
 
 It is built multi-tenant and has users. It sits on a
 free-tier ARM box behind a Cloudflare tunnel, and the health check answered in 0.16
-seconds on 2 August 2026. Nine scheduled jobs keep it running without supervision:
-reply triage six times a day, bounce handling, deliverability reporting, nurture
-sequences, weekday sourcing, a nightly backup, a monthly unit-economics run, and a
-watchdog every fifteen minutes.
+seconds on 2 August 2026. Scheduled jobs keep it running without supervision: reply
+triage six times a day, bounce handling, deliverability reporting, a nurture sequence,
+a monthly unit-economics run, and a watchdog every fifteen minutes.
 
 ## claimcheck
 
@@ -62,9 +60,10 @@ exists. Nobody reads it back against the source. The claim survives into the
 changelog, the pitch, and eventually the CV.
 
 claimcheck takes a document and a codebase, and makes a second, independent agent
-prove every claim against the source with file and line citations, or refuse it. It
-exits with an error on anything unsupported, so it can sit in a build pipeline and
-stop a release.
+prove every claim against the source with file and line citations, or refuse it. Each
+claim comes back true, an overclaim, or unverifiable, and it exits with an error on
+anything the evidence contradicts, so it can sit in a build pipeline and stop a
+release.
 
 I built it after an outside review of my own writing turned up claims the code did not
 support. Being more careful is a promise. This is a check that runs every time.
@@ -78,24 +77,25 @@ themselves. If opt-out detection misses a phrase, the system carries on emailing
 somebody who asked it to stop. Nothing crashes, no alert fires, and the cost arrives
 weeks later on the sending domain.
 
-So the evaluation fixtures cover exactly two paths, the two where a regression is both
-silent and expensive. Each case is a single line of JSON pinning behaviour the code
-already has, which turns a regression into a failing check rather than a live
-incident.
+So two paths are written down as evaluation fixtures, the two where a regression is
+both silent and expensive. Each case is a single line of JSON recording behaviour the
+code already has.
 
 - `suppression_classify.jsonl`, recognising an opt-out in an inbound reply
 - `reply_triage_classify.jsonl`, sorting positive, opt-out, bounce and out-of-office
 
-A test suite covers the same class of risk: the suppression gate, rate limiting,
-dashboard auth tokens, booking slot logic, a browser security header the live demo
-depends on, and what the service does when a model call fails outright.
+Those fixtures are held in the repository and no runner reads them yet, so they are a
+record rather than a gate. What does run on every push and pull request is a test
+suite covering the same class of risk: the suppression gate, rate limiting, dashboard
+auth tokens, booking slot logic, a browser security header the live demo depends on,
+and what the service does when a model call fails outright.
 
-Two paths, chosen deliberately over a coverage number. These are the ones that fail
-without telling you.
+Chosen deliberately over a coverage number. These are the ones that fail without
+telling you.
 
 ## A video pipeline, and the fork that proved it
 
-[github.com/visione4906/horror-shorts-pipeline](https://github.com/visione4906/horror-shorts-pipeline).
+[github.com/visione4906/durable-media-pipeline](https://github.com/visione4906/durable-media-pipeline).
 Public, MIT licensed.
 
 A channel needs output on a schedule, and by hand that costs hours per video. This
@@ -103,14 +103,12 @@ runs the whole chain: seed title, written script, narration, word-level timing,
 generated images, assembly, then a scheduled upload. Progress is stored at each step,
 so a failure resumes where it stopped instead of starting over.
 
-One step stays manual. Every video comes to me on Telegram for approval before it
-publishes. A single bad title is a strike against the channel, and that is not a risk
-worth automating away.
+Nothing publishes silently. Every video is sent to me on Telegram with the slot it is
+scheduled for, and I can cancel it before it goes out. A single bad title is a strike
+against the channel, and that is the one step worth keeping a person on.
 
 Six scheduled tasks run it, all confirmed active on 2 August 2026, and it has
-published real videos to a real channel. I later forked it for two brands in an
-unrelated subject, reusing the same staged steps, which is the evidence that it
-generalises. I would rather show that than assert it.
+published real videos to a real channel.
 
 ## Skin
 
