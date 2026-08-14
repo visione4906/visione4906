@@ -18,6 +18,7 @@ message it the way a customer would, and read what comes back. Nothing is script
 - **[Testing the failures that stay quiet](#testing-the-failures-that-stay-quiet).** How the service above avoids breaking without anyone noticing.
 - **[A video pipeline, and the fork that proved it](#a-video-pipeline-and-the-fork-that-proved-it).** Script to upload, on a schedule.
 - **[Skin](#skin).** Money behind a promise, enforced by a contract. Solidity and TypeScript.
+- **[brain-engine](#brain-engine).** A decision engine in Rust, and the MCP server that exposes it as eight tools over stdio.
 
 ---
 
@@ -127,6 +128,34 @@ hackathon week for BuildAnything Spark. The pledges are testnet MON, not real mo
 It also taught me something I have kept: test through the path a user actually takes.
 Calling the contract directly passed cleanly. Only clicking through the wallet showed
 what that call could not.
+
+---
+
+## brain-engine
+
+[github.com/visione4906/brain-engine](https://github.com/visione4906/brain-engine). Public.
+
+A case-based decision engine in Rust. You describe a situation on closed vocabularies
+and it returns one action and an expectation. When the outcome arrives, it scores the
+case and closes it. Markdown stays the source of truth: SQLite holds document metadata
+and span offsets, Tantivy holds the span text, and the index is derived and rebuildable.
+
+Two decisions in it are worth more than the feature list. The discard log is part of
+the answer, so `match` and `propose` return what they threw away and why. A matcher
+that silently drops candidates is indistinguishable from one that had none, and the
+difference is the whole point. And it refuses: `close` will not score an expectation
+that has not come due yet, with a holdout keeping a tripwire on the refusal so the
+refusal itself stays honest.
+
+`mcp/server.py` wraps the compiled binary and exposes it to any MCP-capable client as
+eight tools over stdio. It returns the engine's text verbatim, discard log and caveats
+included, and does not summarise or re-rank what the engine said.
+
+The corpus it reasons over is private and is not in the repository. What ships is the
+engine and a pair of synthetic fixtures, so the loader and the validator can be tested
+without anybody's business in the repo. Forty-nine tests pass; three are marked
+ignored because they check parity against a Python reference that lives beside the
+private corpus, and they are marked rather than deleted so the gap stays visible.
 
 ---
 
